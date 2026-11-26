@@ -52,6 +52,15 @@ The app must be simple and understandable for non-experts.
 - **AI:** Gemini API (called only from the backend)
 - **Deployment:** TBD (live public URL is required)
 
+## AQI Provider
+
+Set `OPENAQ_API_KEY` in `.env` to enable `GET /api/aqi?city=Delhi`. The endpoint
+selects the nearest station within 10 km that has PM2.5 and PM10 readings no
+older than 48 hours, then calculates AQI using CPCB breakpoints. Responses
+include the station, source, pollutant observation times, and a stale flag.
+If OpenAQ fails, the last successful reading is returned with `is_stale: true`;
+this in-memory cache is cleared when the backend restarts.
+
 ## Planned Features
 - Profile form: city, persona, commute mode, has purifier (y/n)
 - Live AQI card (PM2.5, PM10, AQI, last updated time)
