@@ -90,4 +90,40 @@ class AQIReading(StrictModel):
     pm10_observed_at: str | None = None
 
 
+class DailyRoutineItem(StrictModel):
+    time_slot: str = Field(min_length=1)
+    action: str = Field(min_length=1)
+    why: str = Field(min_length=1)
+
+
+class IndoorAction(StrictModel):
+    action: str = Field(min_length=1)
+    why: str = Field(min_length=1)
+
+
+class SustainableSwap(StrictModel):
+    swap: str = Field(min_length=1)
+    why: str = Field(min_length=1)
+
+
+class AdviceResponse(StrictModel):
+    daily_routine: list[DailyRoutineItem] = Field(min_length=1)
+    indoor_actions: list[IndoorAction] = Field(min_length=1)
+    sustainable_swaps: list[SustainableSwap] = Field(min_length=1)
+    caution_level: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+
+    @field_validator("indoor_actions", mode="before")
+    @classmethod
+    def normalize_indoor_actions(cls, value):
+        if not isinstance(value, list):
+            return value
+        return [
+            {"action": item, "why": "Reduce indoor exposure to polluted outdoor air."}
+            if isinstance(item, str)
+            else item
+            for item in value
+        ]
+
+
 ProfileRequest = UserProfile
