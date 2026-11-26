@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+
+# Node and frontend builds
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+__init__.py
