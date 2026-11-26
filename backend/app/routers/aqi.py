@@ -1,18 +1,21 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
-
+from fastapi import APIRouter, HTTPException, Query, Request
 from app.services.aqi_cache import cache_reading, get_cached_reading
 from app.services.aqi_client import OpenAQError, canonical_city, fetch_city_reading
+from app.rate_limit import limiter
+from app.schemas import AQIReading
 
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/aqi")
+@router.get("/aqi", response_model=AQIReading)
+@limiter.limit("30/minute")
 async def get_aqi(
+    request: Request,
     city: str = Query(..., description="One of the supported Indian cities"),
 ) -> dict[str, Any]:
     try:
