@@ -11,8 +11,8 @@ from app.schemas import AdviceResponse
 
 
 logger = logging.getLogger(__name__)
-PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "advice_v1.txt"
-PROMPT_VERSION = "v1"
+PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "advice_v3.txt"
+PROMPT_VERSION = "v3"
 
 
 class AdviceServiceError(Exception):

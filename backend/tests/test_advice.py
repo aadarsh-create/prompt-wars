@@ -214,6 +214,39 @@ def test_advice_service_rejects_malformed_gemini_json(monkeypatch):
         raise AssertionError("Malformed Gemini JSON should raise AdviceServiceError")
 
 
+def test_advice_service_loads_prompt_v3(monkeypatch):
+    assert advice_service.PROMPT_VERSION == "v3"
+    assert advice_service.PROMPT_PATH.name == "advice_v3.txt"
+
+    profile = type(
+        "Profile",
+        (),
+        {
+            "city": type("City", (), {"value": "Delhi"})(),
+            "persona": type("Persona", (), {"value": "child_family"})(),
+            "commute_mode": type("Commute", (), {"value": "none"})(),
+            "has_purifier": True,
+        },
+    )()
+    reading = {
+        "aqi": 301,
+        "category": "Very Poor",
+        "pm25": 220,
+        "pm10": 330,
+        "observed_at": "2026-11-26T10:00:00+00:00",
+        "is_stale": False,
+        "source": "OpenAQ",
+        "station": "Test station",
+    }
+
+    prompt = advice_service.build_prompt(profile, reading)
+
+    assert "City: Delhi" in prompt
+    assert "child_family" in prompt
+    assert "Is stale: no" in prompt
+    assert "explicit \"go\", \"limited\", or \"no-go\" decision" in prompt
+
+
 def test_advice_endpoint_returns_structured_response(monkeypatch):
     from app.routers import advice
 
