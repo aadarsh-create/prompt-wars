@@ -7,6 +7,7 @@ import AqiHistoryChart from "./components/AqiHistoryChart.jsx";
 import Header from "./components/Header.jsx";
 import PersonaCompare from "./components/PersonaCompare.jsx";
 import ProfileForm, { PERSONAS } from "./components/ProfileForm.jsx";
+import ServerStatus from "./components/ServerStatus.jsx";
 import styles from "./styles/App.module.css";
 
 function errorMessage(error) {
@@ -42,6 +43,7 @@ function App() {
   const [comparisonStatus, setComparisonStatus] = useState("idle");
   const [comparisonError, setComparisonError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const initialCitiesLoadStarted = useRef(false);
   const initialPlanRequested = useRef(false);
 
   const theme = themeOverride || systemTheme;
@@ -79,6 +81,8 @@ function App() {
   }
 
   useEffect(() => {
+    if (initialCitiesLoadStarted.current) return;
+    initialCitiesLoadStarted.current = true;
     loadCities();
   }, []);
 
@@ -225,6 +229,7 @@ function App() {
   return (
     <div className={styles.appShell}>
       <a className={styles.skipLink} href="#main-content">Skip to content</a>
+      <ServerStatus />
       <Header theme={theme} onThemeToggle={handleThemeToggle} />
       <main id="main-content" className={styles.mainContent}>
         <section className={styles.hero} aria-labelledby="page-title">

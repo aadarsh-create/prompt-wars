@@ -1,3 +1,5 @@
+import { beginServerRequest } from "./serverStatus.js";
+
 const FIELD_MESSAGES = {
   city: "Choose a supported city.",
   persona: "Choose who this plan is for.",
@@ -26,14 +28,17 @@ function mapValidationErrors(detail) {
 
 async function requestJson(path, options) {
   let response;
+  const serverRequest = beginServerRequest();
   try {
     response = await fetch(path, options);
   } catch {
+    serverRequest.fail();
     throw new ApiError("network");
   }
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
+    serverRequest.fail();
     if (response.status === 422) {
       throw new ApiError("validation", mapValidationErrors(payload?.detail));
     }
@@ -45,6 +50,7 @@ async function requestJson(path, options) {
     throw new ApiError("request");
   }
 
+  serverRequest.succeed();
   return payload;
 }
 

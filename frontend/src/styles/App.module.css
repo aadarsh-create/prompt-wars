@@ -1343,11 +1343,24 @@
   }
 }
 
+@media (max-width: 1439px) {
+  .header {
+    min-height: 128px;
+    align-items: flex-end;
+    padding-top: 44px;
+  }
+}
+
 @media (max-width: 760px) {
   .header,
   .mainContent,
   .footer {
     width: min(100% - 28px, 600px);
+  }
+
+  .header {
+    min-height: 116px;
+    padding-top: 40px;
   }
 
   .mainContent {
@@ -1394,7 +1407,7 @@
 
 @media (max-width: 520px) {
   .header {
-    min-height: 72px;
+    min-height: 112px;
   }
 
   .brand small {

@@ -1,0 +1,71 @@
+.serverStatus {
+  position: fixed;
+  z-index: 4;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #CBD5E1;
+  border-radius: 999px;
+  background: #FFFFFF;
+  padding: 6px 12px;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 12%);
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.statusDot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  isolation: isolate;
+  color: #64748B;
+  background: currentColor;
+  animation: statusBlink 1.4s ease-in-out infinite;
+}
+
+.statusDot::before {
+  position: absolute;
+  z-index: -1;
+  inset: -3px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+  filter: blur(4px);
+  opacity: 0.8;
+}
+
+.online .statusDot {
+  color: #16A34A;
+}
+
+.waiting .statusDot {
+  color: #EAB308;
+}
+
+.offline .statusDot {
+  color: #DC2626;
+}
+
+@keyframes statusBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statusDot {
+    animation: none;
+  }
+}
