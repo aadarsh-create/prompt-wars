@@ -107,7 +107,7 @@ handling, the advice endpoint, and the eval checks.
 Needs Python 3.10+, Node 18+, an OpenAQ API key and a Gemini API key.
 
 ```bash
-git clone [FILL: repo url] && cd prompt-wars
+git clone https://github.com/aadarsh-create/prompt-wars && cd prompt-wars
 cp .env.example .env        # Windows: copy .env.example .env  (then add keys)
 
 # backend
