@@ -35,7 +35,7 @@
   --hero-dot: rgb(25 91 69 / 9%);
   --shadow-card: 0 8px 26px rgb(var(--color-shadow) / 5%);
 
-  --radius-card: 12px;
+  --radius-card: 16px;
   --radius-control: 8px;
   --space-1: 8px;
   --space-2: 16px;

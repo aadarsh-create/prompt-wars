@@ -5,7 +5,7 @@ import styles from "../styles/App.module.css";
 function AdviceSection({ advice, status, error, onRetry, onCompare, comparisonStatus }) {
   if (status === "loading") {
     return (
-      <section className={styles.card} aria-labelledby="advice-title" aria-busy="true">
+      <section className={`${styles.card} ${styles.advicePanel}`} aria-labelledby="advice-title" aria-busy="true">
         <p className={styles.sectionEyebrow}>Your personal plan</p>
         <h2 id="advice-title">Putting together practical next steps</h2>
         <div className={styles.adviceSkeleton} role="status" aria-label="Loading personalized advice">
@@ -17,7 +17,7 @@ function AdviceSection({ advice, status, error, onRetry, onCompare, comparisonSt
 
   if (status === "error") {
     return (
-      <section className={styles.card} aria-labelledby="advice-title">
+      <section className={`${styles.card} ${styles.advicePanel}`} aria-labelledby="advice-title">
         <p className={styles.sectionEyebrow}>Your personal plan</p>
         <h2 id="advice-title">Advice is temporarily unavailable</h2>
         <div className={styles.inlineError} role="alert">
@@ -31,7 +31,7 @@ function AdviceSection({ advice, status, error, onRetry, onCompare, comparisonSt
   if (!advice) return null;
 
   return (
-    <section className={styles.adviceCard} aria-labelledby="advice-title">
+    <section className={`${styles.adviceCard} ${styles.advicePanel}`} aria-labelledby="advice-title">
       <div className={styles.adviceHeader}>
         <div>
           <p className={styles.sectionEyebrow}>Your personal plan</p>
