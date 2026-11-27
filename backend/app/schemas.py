@@ -93,6 +93,7 @@ class AQIReading(StrictModel):
     source: str
     is_stale: bool
     station: str | None = None
+    temperature_c: float | None = Field(default=None, ge=-90, le=70)
     pm25_observed_at: str | None = None
     pm10_observed_at: str | None = None
     history: list[AQIHistoryPoint] = Field(default_factory=list)

@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services import aqi_cache
 from app.services import aqi_client
+from app.services.weather_client import WeatherError
 
 
 @pytest.fixture(autouse=True)
@@ -182,7 +183,11 @@ def test_returns_stale_cached_reading_when_provider_fails(monkeypatch):
     async def provider_failure(city):
         raise aqi_client.OpenAQError("provider unavailable")
 
+    async def temperature_available(city):
+        return 21.5
+
     monkeypatch.setattr("app.routers.aqi.fetch_city_reading", provider_failure)
+    monkeypatch.setattr("app.routers.aqi.fetch_city_temperature", temperature_available)
 
     with TestClient(app) as client:
         response = client.get("/api/aqi", params={"city": "delhi"})
@@ -190,19 +195,37 @@ def test_returns_stale_cached_reading_when_provider_fails(monkeypatch):
     assert response.status_code == 200
     assert response.json()["is_stale"] is True
     assert response.json()["aqi"] == 143
+    assert response.json()["temperature_c"] == 21.5
 
 
 def test_returns_503_when_provider_and_cache_are_unavailable(monkeypatch):
     async def provider_failure(city):
         raise aqi_client.OpenAQError("provider unavailable")
 
+    async def temperature_failure(city):
+        raise WeatherError("weather unavailable")
+
     monkeypatch.setattr("app.routers.aqi.fetch_city_reading", provider_failure)
+    monkeypatch.setattr("app.routers.aqi.fetch_city_temperature", temperature_failure)
 
     with TestClient(app) as client:
         response = client.get("/api/aqi", params={"city": "Mumbai"})
 
     assert response.status_code == 503
     assert "no cached reading" in response.json()["detail"]
+
+
+def test_aqi_response_includes_temperature_when_available(openaq_response, monkeypatch):
+    async def temperature_available(city):
+        return 24.5
+
+    monkeypatch.setattr("app.routers.aqi.fetch_city_temperature", temperature_available)
+
+    with TestClient(app) as client:
+        response = client.get("/api/aqi", params={"city": "Delhi"})
+
+    assert response.status_code == 200
+    assert response.json()["temperature_c"] == 24.5
 
 
 def test_rejects_unsupported_city():

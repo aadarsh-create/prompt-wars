@@ -420,6 +420,7 @@
 .card,
 .emptyCard,
 .historyCard,
+.temperatureCard,
 .adviceCard,
 .compareSection {
   min-width: 0;
@@ -624,7 +625,8 @@
   padding: 24px;
 }
 
-.historyCard {
+.historyCard,
+.temperatureCard {
   padding: 18px 20px 12px;
 }
 
@@ -731,6 +733,46 @@
 }
 
 .currentAqiMarker {
+  stroke: var(--color-text);
+  stroke-width: 3;
+}
+
+.temperatureHeading {
+  align-items: center;
+}
+
+.temperatureCard {
+  margin-top: 12px;
+  padding: 12px 16px 8px;
+}
+
+.temperatureChart {
+  margin-top: 0;
+}
+
+.temperatureValue {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.temperatureValue span {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.temperatureUnavailable {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.temperatureScale {
+  fill: url(#temperature-gradient);
+}
+
+.temperatureMarker {
   stroke: var(--color-text);
   stroke-width: 3;
 }
@@ -928,6 +970,58 @@
 .observedAt time {
   border-bottom: 1px dotted currentColor;
   cursor: help;
+}
+
+.aqiCard {
+  padding: 18px;
+}
+
+.aqiCard .cardHeading {
+  margin-bottom: 12px;
+}
+
+.aqiCard .readingTop {
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.aqiCard .aqiBadge {
+  width: 96px;
+  min-height: 96px;
+}
+
+.aqiCard .aqiNumber {
+  font-size: 2.1rem;
+}
+
+.aqiCard .categoryBadge {
+  min-height: 34px;
+  padding: 5px 10px;
+}
+
+.aqiCard .categoryCopy p {
+  margin-top: 5px;
+}
+
+.aqiCard .pollutants {
+  gap: 8px;
+}
+
+.aqiCard .pollutant {
+  padding: 8px 10px;
+}
+
+.aqiCard .pollutant dd {
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.aqiCard .observedAt {
+  margin-top: 10px;
+}
+
+.aqiCard .staleBanner {
+  margin-bottom: 12px;
 }
 
 .staleBanner {
@@ -1291,6 +1385,7 @@
   .profileCard,
   .card,
   .historyCard,
+  .temperatureCard,
   .adviceCard,
   .compareSection {
     padding: 18px;

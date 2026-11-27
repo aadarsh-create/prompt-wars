@@ -8,6 +8,7 @@ import {
   Wind,
 } from "lucide-react";
 import StaleBanner from "./StaleBanner.jsx";
+import TemperatureChart from "./TemperatureChart.jsx";
 import styles from "../styles/App.module.css";
 
 const CATEGORY_DETAILS = {
@@ -54,7 +55,7 @@ function AqiCard({ city, reading, status, error, onRetry }) {
   if (status === "idle") return null;
 
   return (
-    <section className={styles.card} aria-labelledby="aqi-title">
+    <section className={`${styles.card} ${styles.aqiCard}`} aria-labelledby="aqi-title">
       <div className={styles.cardHeading}>
         <div>
           <p className={styles.sectionEyebrow}>Current air quality</p>
@@ -76,6 +77,7 @@ function AqiCard({ city, reading, status, error, onRetry }) {
         <>
           {reading.is_stale && <StaleBanner observedAt={reading.observed_at} />}
           <ReadingDetails reading={reading} />
+          <TemperatureChart temperatureC={reading.temperature_c} />
         </>
       )}
     </section>

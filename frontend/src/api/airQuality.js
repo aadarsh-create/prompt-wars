@@ -79,6 +79,16 @@ export async function fetchAqi(city) {
     || typeof reading.observed_at !== "string"
     || typeof reading.source !== "string"
     || typeof reading.is_stale !== "boolean"
+    || (
+      reading.temperature_c !== undefined
+      && reading.temperature_c !== null
+      && (
+        typeof reading.temperature_c !== "number"
+        || !Number.isFinite(reading.temperature_c)
+        || reading.temperature_c < -90
+        || reading.temperature_c > 70
+      )
+    )
     || !Array.isArray(reading.history)
     || (
       reading.history_parameter !== undefined
