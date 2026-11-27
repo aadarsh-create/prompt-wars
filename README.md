@@ -1,113 +1,124 @@
-# Urban Air Quality Assistant
+# 🌫️ Urban Air Quality Assistant
 
-AI-powered web app that helps families and communities in Indian cities
-cope with winter smog and urban air pollution through personalized,
-actionable, explained recommendations.
+**Live AQI in, personalised "what should I do today?" out.**
+Two people in the same city shouldn't get the same smog advice, so this app
+doesn't give them the same advice.
 
-Built for Hack2skill PromptWars Virtual, Challenge 6.
+> ### 🏆 Built for **Hack2skill PromptWars Virtual · Challenge 6**
+> Solo entry · Generative AI for urban air quality and healthier daily choices.
 
-## Problem Statement
 
-Build a Generative AI-powered Urban Air Quality Assistant that helps
-families and communities manage severe winter smog and pollution through
-personalized guidance. It must cover three areas:
+## 💡 Why this exists
 
-1. **Low-emission daily routines**
-   - Suggest lower-emission alternatives to usual commutes/activities.
-   - Adjust plans using real-time outdoor AQI (PM2.5, PM10, etc.).
-   - Plan to minimize pollution exposure, tailored to the user's city
-     (Delhi, Mumbai, Kolkata, etc.).
-2. **Indoor air quality improvement**
-   - Actionable steps (purifiers, indoor plants, ventilation timing),
-     not just reporting numbers.
-3. **Sustainable alternatives with impact explanation**
-   - Every recommendation must include a clear, simple explanation of
-     how the choice affects air quality and health.
+Winter smog in Indian cities is a daily decision problem: can my child play
+outside, should my parents walk this evening, is it worth taking the car? An
+AQI number alone doesn't answer that. This app turns real, current readings
+into specific, explained actions for a specific person.
 
-### Users and personalization
-- Families with children (e.g., outdoor playtime decisions)
-- Senior citizens (more cautious advice)
-- Working professionals (commute and office air)
-- Students (outdoor activities)
+## ✨ What it does
 
-Two users in the same city must NOT get identical advice. Advice depends
-on persona, lifestyle, commute, and location.
+- 📡 **Live air quality** for Delhi, Mumbai, Kolkata, Chennai, Bengaluru and
+  Hyderabad: PM2.5, PM10, CPCB AQI category, station, and observation time
+- 🤖 **Personalised plan** from Gemini as structured JSON: time-slotted daily
+  routine, indoor air actions, and sustainable swaps, each with a plain-language
+  *"why this helps"*
+- 👨‍👩‍👧 **Persona comparison:** the same city and AQI, side by side for different people
+- 📈 **History view:** recent AQI trend, with gaps left as gaps
+- ✅ **Honest about data:** if the provider fails, you see the last real reading
+  labelled stale with its timestamp; if there is none, you see "no data"
+  instead of a made-up number
 
-The app must be simple and understandable for non-experts.
+## 🎯 Same city, different advice
 
-## Hard Rules
-- **Real-time AQI data only.** No mock, simulated or static data. If the
-  data source fails, show the last real reading with its timestamp and
-  say it is stale. Never invent values.
-- Public data sources for AQI (e.g., OpenAQ, CPCB). Free options only
-  unless I approve otherwise.
-- No secrets in code or in the repo. Use `.env`, and keep `.env` in
-  `.gitignore`.
-- Validate all user inputs on the backend.
-- Original work only.
+| Persona | What changes in the advice |
+|---|---|
+| 👨‍👩‍👧 Family with children | Outdoor play go/limited/no-go, school commute, indoor play ideas |
+| 👵 Senior citizen | More cautious thresholds, lower-exertion options |
+| 💼 Working professional | Commute and office air |
+| 🎓 Student | Outdoor activities, study-space air |
 
-## Tech Stack
-- **Backend:** Python, FastAPI
-- **Frontend:** React
-- **AI:** Gemini API (called only from the backend)
-- **Deployment:** TBD (live public URL is required)
+[FILL: paste one real example, e.g. Delhi, same AQI, two personas, 2-3 lines each]
 
-## AQI Provider
+## 🧩 How it works
 
-`GET /api/cities` returns the backend-supported city allowlist used by the
-frontend profile form.
+```mermaid
+flowchart LR
+  U[React UI] --> A[FastAPI]
+  A --> O[OpenAQ v3<br/>live AQI + history]
+  A --> W[Open-Meteo<br/>temperature]
+  A --> G[Gemini<br/>structured advice]
+  A --> C[(In-memory cache<br/>last real reading)]
+```
 
-Set `OPENAQ_API_KEY` in `.env` to enable `GET /api/aqi?city=Delhi`. The endpoint
-selects the nearest station within 10 km that has PM2.5 and PM10 readings no
-older than 48 hours, then calculates AQI using CPCB breakpoints. Responses
-include the station, source, pollutant observation times, and a stale flag.
-If OpenAQ fails, the last successful reading is returned with `is_stale: true`;
-this in-memory cache is cleared when the backend restarts.
+🔒 Keys stay on the backend. The browser never talks to OpenAQ or Gemini.
 
-## Advice prompt evaluation
+## 🔌 API
 
-The offline evaluation harness is in `backend/evals/`. It supplies
-parameterised AQI fixture values marked **TEST INPUT ONLY** to the existing
-advice service; those fixtures are never imported by the runtime app. The app
-itself uses live AQI-provider data, or its last previously fetched real reading
-marked stale when the provider is unavailable.
+Interactive docs at `/docs`. Main endpoints:
 
-Run one prompt version from the `backend` directory with
-`python -m evals.run_eval --prompt v3`. Each run is serial, waits at least 12
-seconds between top-level evaluation calls (the service's existing retry is
-immediate), and is capped at 148 cases. A complete run makes
-148 advice-service calls and can make up to 296 Gemini HTTP attempts if every
-service call uses its existing retry. Add `--judge` only when desired; it makes
-up to 148 additional calls and Gemini grading Gemini may introduce model bias.
-Results are written to `backend/evals/results/`; pytest tests the deterministic
-checks without making Gemini calls.
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/cities` | Supported city allowlist |
+| `GET /api/aqi?city=Delhi` | Live AQI, history, temperature, stale flag |
+| `POST /api/advice` | Personalised plan from a profile |
+| `GET /api/health` | Health check |
 
-## Planned Features
-- Profile form: city, persona, commute mode, has purifier (y/n)
-- Live AQI card (PM2.5, PM10, AQI, last updated time)
-- Personalized advice from Gemini as structured JSON:
-  daily routine (time-specific), indoor actions, sustainable swaps with
-  "why it helps"
-- Persona comparison: preset profiles so two personas in the same city
-  can be compared side by side
+Rate limits: 30/min (AQI) and 10/min (advice) per client.
 
-## Quality Requirements (automated scoring)
-- Clean, modular code and clear project structure
-- Unit tests (pytest) for AQI parsing and the advice endpoint
-- Input validation, basic rate limiting, safe error handling
-- Accessible UI: labels, contrast, keyboard navigation
-- Clear README with setup instructions and sample inputs
+## 🧠 Prompt engineering
 
-## Submission Checklist
-- [ ] Deployed app link (tested in incognito)
-- [ ] Public GitHub repo
-- [ ] Demo video (2-3 minutes)
-- [ ] LinkedIn post: thought process, architecture, tools, prompt evolution
-- [ ] README documents tool choices, prompt engineering process, and
-      what the human did vs what the AI did
+Prompts are versioned in `backend/app/prompts/`. Gemini is asked for a strict
+JSON schema, and the response is re-validated with Pydantic, with one retry on
+malformed output.
 
-## Working Agreement for the AI Agent
-- Always write a plan first and wait for my approval before coding.
-- Work in small tasks. Show me diffs.
-- Ask before adding any paid service or new major dependency.
-- Never hardcode keys or use fake data to make a demo pass.
+| Version | What changed | Why |
+|---|---|---|
+| v1 | Baseline: role, live AQI context, persona safety rules, JSON output, stale-reading disclosure | Establish a working structured-output starting point |
+| v2 | Labelled context block, priority order for exposure reduction, 3-5 routine actions, clearer persona and swap constraints, no-purifier alternatives | Cut generic advice; focus on actions the user can take today |
+| v3 | Decision-first format, child-family go/limited/no-go, commute-specific rules, severe-smog guidance, concise output counts, guardrails against unsupported thresholds and medical certainty | Consistent persona output that is concise, evidence-bounded and easy to compare side by side |
+
+v3 is the current production prompt. Full history and the test matrix:
+[docs/prompt_evolution.md](docs/prompt_evolution.md).
+
+## 📊 Evaluation
+
+An offline harness runs persona × city × AQI-bucket cases through the real
+advice service and scores deterministic checks (schema validity, "why it
+helps" coverage, safety rules, persona differentiation). AQI values in the
+cases are test inputs only and are never imported by the app.
+
+[FILL after real runs: results table per prompt version, numbers copied from
+`backend/evals/results/`]
+
+Run it yourself: `cd backend && python -m evals.run_eval --prompt v3`.
+The checks are heuristic and don't replace expert review.
+
+## 🧪 Testing
+
+```bat
+.venv\Scripts\python -m pytest backend/tests
+```
+
+Covers health, city allowlist, schemas, AQI parsing and caching, weather
+handling, the advice endpoint, and the eval checks.
+
+## 🚀 Quick start
+
+Needs Python 3.10+, Node 18+, an OpenAQ API key and a Gemini API key.
+
+```bash
+git clone [FILL: repo url] && cd prompt-wars
+cp .env.example .env        # Windows: copy .env.example .env  (then add keys)
+
+# backend
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r backend/requirements.txt
+cd backend && uvicorn app.main:app --reload
+
+# frontend (new terminal)
+cd frontend && npm install && npm run dev
+```
+
+Open http://localhost:5173. API docs are at http://localhost:8000/docs.
+`.env` is gitignored, so never commit keys.
