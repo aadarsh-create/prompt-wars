@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, Sparkles, Wind } from "lucide-react";
 import { ApiError, fetchAdvice, fetchAqi, fetchCities } from "./api/airQuality.js";
 import AdviceSection from "./components/AdviceSection.jsx";
@@ -42,6 +42,7 @@ function App() {
   const [comparisonStatus, setComparisonStatus] = useState("idle");
   const [comparisonError, setComparisonError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const initialPlanRequested = useRef(false);
 
   const theme = themeOverride || systemTheme;
 
@@ -180,6 +181,12 @@ function App() {
     if (currentReading) await loadAdvice(currentProfile);
     setSubmitting(false);
   }
+
+  useEffect(() => {
+    if (citiesStatus !== "success" || !profile.city || initialPlanRequested.current) return;
+    initialPlanRequested.current = true;
+    loadPlan(profile);
+  }, [citiesStatus, profile.city]);
 
   function handleSubmit(event) {
     event.preventDefault();
