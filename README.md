@@ -54,6 +54,9 @@ The app must be simple and understandable for non-experts.
 
 ## AQI Provider
 
+`GET /api/cities` returns the backend-supported city allowlist used by the
+frontend profile form.
+
 Set `OPENAQ_API_KEY` in `.env` to enable `GET /api/aqi?city=Delhi`. The endpoint
 selects the nearest station within 10 km that has PM2.5 and PM10 readings no
 older than 48 hours, then calculates AQI using CPCB breakpoints. Responses

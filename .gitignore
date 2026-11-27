@@ -27,3 +27,6 @@ Thumbs.db
 *.log
 
 __init__.py
+
+setup.bat
+start.bat

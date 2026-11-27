@@ -51,17 +51,51 @@ def openaq_response(monkeypatch) -> dict:
             },
         ]
     }
+    history_timestamps = [
+        now - timedelta(hours=3),
+        now - timedelta(hours=2),
+    ]
+    hourly_payloads = {
+        "/sensors/101/hours": {
+            "results": [
+                {
+                    "value": value,
+                    "period": {"datetimeTo": {"utc": timestamp.isoformat()}},
+                }
+                for timestamp, value in zip(history_timestamps, (30, 60))
+            ]
+        },
+        "/sensors/102/hours": {
+            "results": [
+                {
+                    "value": value,
+                    "period": {"datetimeTo": {"utc": timestamp.isoformat()}},
+                }
+                for timestamp, value in zip(history_timestamps, (50, 100))
+            ]
+        },
+    }
 
     async def mock_get_json(client, path, *, params=None):
         if path == "/locations":
             return locations_payload
         if path == "/locations/42/latest":
             return latest_payload
+        if path in hourly_payloads:
+            assert params is not None
+            assert "datetime_from" in params
+            assert "datetime_to" in params
+            assert "date_from" not in params
+            assert "date_to" not in params
+            return hourly_payloads[path]
         raise aqi_client.OpenAQError(f"Unexpected path: {path}")
 
     monkeypatch.setenv("OPENAQ_API_KEY", "test-key")
     monkeypatch.setattr(aqi_client, "_get_json", mock_get_json)
-    return {"observed_text": observed_iso}
+    return {
+        "observed_text": observed_iso,
+        "history_timestamps": [timestamp.isoformat() for timestamp in history_timestamps],
+    }
 
 
 def test_parses_openaq_location_and_calculates_aqi(openaq_response):
@@ -75,6 +109,25 @@ def test_parses_openaq_location_and_calculates_aqi(openaq_response):
     assert reading["observed_at"] == openaq_response["observed_text"]
     assert reading["source"] == "OpenAQ"
     assert reading["is_stale"] is False
+    assert reading["history"] == [
+        {"timestamp": openaq_response["history_timestamps"][0], "aqi": 50},
+        {"timestamp": openaq_response["history_timestamps"][1], "aqi": 100},
+    ]
+
+
+def test_history_failure_does_not_block_current_reading(openaq_response, monkeypatch):
+    original_get_json = aqi_client._get_json
+
+    async def fail_history(client, path, *, params=None):
+        if path.startswith("/sensors/"):
+            raise aqi_client.OpenAQError("history unavailable")
+        return await original_get_json(client, path, params=params)
+
+    monkeypatch.setattr(aqi_client, "_get_json", fail_history)
+    reading = asyncio.run(aqi_client.fetch_city_reading("Delhi"))
+
+    assert reading["aqi"] == 153
+    assert reading["history"] == []
 
 
 def test_pm25_sub_index_uses_cpcb_boundaries():

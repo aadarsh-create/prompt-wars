@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import math
 import os
 from datetime import datetime, timedelta, timezone
@@ -9,6 +11,7 @@ import httpx
 OPENAQ_BASE_URL = "https://api.openaq.org/v3"
 SEARCH_RADIUS_METERS = 10_000
 READING_MAX_AGE = timedelta(hours=48)
+HISTORY_PERIOD = timedelta(hours=24)
 CITY_COORDINATES = {
     "delhi": ("Delhi", 28.6139, 77.2090),
     "mumbai": ("Mumbai", 19.0760, 72.8777),
@@ -17,6 +20,7 @@ CITY_COORDINATES = {
     "bengaluru": ("Bengaluru", 12.9716, 77.5946),
     "hyderabad": ("Hyderabad", 17.3850, 78.4867),
 }
+logger = logging.getLogger(__name__)
 
 AQI_BREAKPOINTS = {
     "pm25": (
@@ -202,6 +206,41 @@ def _latest_pm_readings(
     return latest
 
 
+def _hourly_pm_readings(
+    payload: dict[str, Any],
+    now: datetime,
+) -> dict[datetime, float]:
+    results = payload.get("results")
+    if not isinstance(results, list):
+        raise OpenAQError("OpenAQ returned an invalid hourly-measurements payload.")
+
+    readings: dict[datetime, float] = {}
+    cutoff = now - HISTORY_PERIOD
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        value = result.get("value")
+        period = result.get("period")
+        datetime_to = period.get("datetimeTo") if isinstance(period, dict) else None
+        timestamp = (
+            _parse_datetime(datetime_to.get("utc"))
+            if isinstance(datetime_to, dict)
+            else None
+        )
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0
+            or timestamp is None
+            or timestamp < cutoff
+            or timestamp > now + timedelta(minutes=5)
+        ):
+            continue
+        readings[timestamp] = float(value)
+    return readings
+
+
 async def _get_json(
     client: httpx.AsyncClient,
     path: str,
@@ -297,6 +336,56 @@ async def fetch_city_reading(city: str) -> dict[str, Any]:
                 pm10, pm10_timestamp = readings["pm10"]
                 aqi = max(_sub_index("pm25", pm25), _sub_index("pm10", pm10))
                 observed_at = min(pm25_timestamp, pm10_timestamp)
+                history: list[dict[str, Any]] = []
+                try:
+                    hourly_by_parameter: dict[str, dict[datetime, float]] = {}
+                    history_sensors = [
+                        (sensor_id, parameter)
+                        for sensor_id, parameter in _sensor_parameters(location).items()
+                        if parameter in ("pm25", "pm10")
+                    ]
+                    hourly_payloads = await asyncio.gather(
+                        *(
+                            _get_json(
+                                client,
+                                f"/sensors/{sensor_id}/hours",
+                                params={
+                                    "datetime_from": (now - HISTORY_PERIOD).isoformat(),
+                                    "datetime_to": now.isoformat(),
+                                    "limit": 1000,
+                                },
+                            )
+                            for sensor_id, _ in history_sensors
+                        )
+                    )
+                    for (_, parameter), hourly_payload in zip(
+                        history_sensors,
+                        hourly_payloads,
+                    ):
+                        hourly_by_parameter[parameter] = _hourly_pm_readings(
+                            hourly_payload,
+                            now,
+                        )
+                    common_timestamps = sorted(
+                        set(hourly_by_parameter.get("pm25", {}))
+                        & set(hourly_by_parameter.get("pm10", {}))
+                    )
+                    history = [
+                        {
+                            "timestamp": timestamp.isoformat(),
+                            "aqi": max(
+                                _sub_index("pm25", hourly_by_parameter["pm25"][timestamp]),
+                                _sub_index("pm10", hourly_by_parameter["pm10"][timestamp]),
+                            ),
+                        }
+                        for timestamp in common_timestamps
+                    ]
+                except OpenAQError as error:
+                    logger.warning(
+                        "Unable to retrieve 24-hour AQI history for %s: %s",
+                        normalized_city,
+                        error,
+                    )
                 return {
                     "city": normalized_city,
                     "aqi": aqi,
@@ -309,6 +398,7 @@ async def fetch_city_reading(city: str) -> dict[str, Any]:
                     "source": "OpenAQ",
                     "station": location.get("name") or f"OpenAQ location {location['id']}",
                     "is_stale": False,
+                    "history": history,
                 }
     except OpenAQError:
         raise

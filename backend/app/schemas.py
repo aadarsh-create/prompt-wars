@@ -76,6 +76,11 @@ class AdviceRequest(StrictModel):
     profile: UserProfile
 
 
+class AQIHistoryPoint(StrictModel):
+    timestamp: str
+    aqi: int = Field(ge=0, le=500)
+
+
 class AQIReading(StrictModel):
     city: str
     aqi: int = Field(ge=0, le=500)
@@ -88,6 +93,7 @@ class AQIReading(StrictModel):
     station: str | None = None
     pm25_observed_at: str | None = None
     pm10_observed_at: str | None = None
+    history: list[AQIHistoryPoint] = Field(default_factory=list)
 
 
 class DailyRoutineItem(StrictModel):
