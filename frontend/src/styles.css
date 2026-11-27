@@ -307,6 +307,139 @@ button:focus-visible {
   font-size: 0.82rem;
 }
 
+.advice-actions {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.secondary-button {
+  border: 1px solid #315be8;
+  background: #ffffff;
+  color: #315be8;
+}
+
+.secondary-button:hover {
+  background: #edf2ff;
+}
+
+.comparison-control {
+  display: grid;
+  gap: 0.45rem;
+  border-top: 1px solid #edf1f7;
+  padding-top: 0.75rem;
+}
+
+.comparison-control label {
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.advice-section {
+  margin-top: 1.25rem;
+  border: 1px solid #dde4ef;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 14px 35px rgb(31 44 71 / 8%);
+  padding: 1.25rem;
+}
+
+.advice-heading,
+.persona-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.advice-heading {
+  margin-bottom: 1rem;
+}
+
+.stale-label,
+.caution-level {
+  border-radius: 999px;
+  background: #fff4c7;
+  padding: 0.4rem 0.65rem;
+  color: #684b00;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.advice-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.advice-grid.comparison {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.advice-card {
+  min-width: 0;
+  border: 1px solid #e1e7f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
+.persona-heading h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.advice-summary {
+  margin: 0.85rem 0 1rem;
+  color: #526178;
+  line-height: 1.55;
+}
+
+.advice-block h4 {
+  margin: 0 0 0.65rem;
+  color: #526178;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.advice-block ol,
+.advice-block ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.advice-block li {
+  display: grid;
+  gap: 0.2rem;
+  border-radius: 0.65rem;
+  background: #edf2fb;
+  padding: 0.75rem;
+}
+
+.advice-block p,
+.advice-block small {
+  margin: 0;
+  color: #526178;
+  line-height: 1.45;
+}
+
+.advice-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.advice-message {
+  min-height: 7rem;
+  display: grid;
+  place-items: center;
+  color: #637083;
+}
+
 @media (max-width: 720px) {
   .app-shell {
     padding-top: 1.5rem;
@@ -318,5 +451,10 @@ button:focus-visible {
 
   .reading {
     align-items: start;
+  }
+
+  .advice-grid.comparison,
+  .advice-columns {
+    grid-template-columns: 1fr;
   }
 }

@@ -50,6 +50,10 @@ function App() {
   const [reading, setReading] = React.useState(null);
   const [status, setStatus] = React.useState("idle");
   const [error, setError] = React.useState("");
+  const [comparePersona, setComparePersona] = React.useState("senior");
+  const [adviceResults, setAdviceResults] = React.useState([]);
+  const [adviceStatus, setAdviceStatus] = React.useState("idle");
+  const [adviceError, setAdviceError] = React.useState("");
 
   async function loadAqi(city) {
     setStatus("loading");
@@ -82,11 +86,59 @@ function App() {
       ...current,
       [name]: type === "checkbox" ? checked : value,
     }));
+    if (name === "persona") {
+      setComparePersona(value === "senior" ? "working_professional" : "senior");
+      setAdviceResults([]);
+      setAdviceStatus("idle");
+      setAdviceError("");
+    }
   }
 
   function handleSubmit(event) {
     event.preventDefault();
+    setAdviceResults([]);
+    setAdviceStatus("idle");
+    setAdviceError("");
     loadAqi(profile.city);
+  }
+
+  function profilePayload(persona) {
+    return {
+      city: profile.city,
+      persona,
+      commute_mode: profile.commuteMode,
+      has_purifier: profile.hasPurifier,
+    };
+  }
+
+  async function getAdvice(personas) {
+    if (!reading) return;
+
+    setAdviceStatus("loading");
+    setAdviceError("");
+    setAdviceResults([]);
+
+    try {
+      const responses = await Promise.all(
+        personas.map(async (persona) => {
+          const response = await fetch("/api/advice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ profile: profilePayload(persona.value) }),
+          });
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.detail || "Personalized advice is unavailable.");
+          }
+          return { ...persona, advice: payload };
+        }),
+      );
+      setAdviceResults(responses);
+      setAdviceStatus("success");
+    } catch (requestError) {
+      setAdviceStatus("error");
+      setAdviceError(requestError.message || "Could not generate personalized advice.");
+    }
   }
 
   return (
@@ -144,6 +196,40 @@ function App() {
           <button type="submit" disabled={status === "loading"}>
             {status === "loading" ? "Checking air…" : "Check air quality"}
           </button>
+
+          <div className="advice-actions" aria-label="Advice options">
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={!reading || status !== "success" || adviceStatus === "loading"}
+              onClick={() => getAdvice([PERSONAS.find((item) => item.value === profile.persona)])}
+            >
+              {adviceStatus === "loading" ? "Preparing advice…" : "Get advice"}
+            </button>
+
+            <div className="comparison-control">
+              <label htmlFor="comparePersona">Compare with</label>
+              <select
+                id="comparePersona"
+                value={comparePersona}
+                onChange={(event) => setComparePersona(event.target.value)}
+              >
+                {PERSONAS.filter((persona) => persona.value !== profile.persona).map((persona) => (
+                  <option key={persona.value} value={persona.value}>{persona.label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={!reading || status !== "success" || adviceStatus === "loading"}
+                onClick={() => getAdvice([
+                  PERSONAS.find((item) => item.value === profile.persona),
+                  PERSONAS.find((item) => item.value === comparePersona),
+                ])}
+              >
+                Compare personas
+              </button>
+            </div>
+          </div>
         </form>
 
         <section className="aqi-card" aria-labelledby="aqi-heading" aria-live="polite">
@@ -208,6 +294,87 @@ function App() {
           )}
         </section>
       </div>
+
+      {(adviceStatus !== "idle" || adviceResults.length > 0) && (
+        <section className="advice-section" aria-labelledby="advice-heading" aria-live="polite">
+          <div className="advice-heading">
+            <div>
+              <p className="label">Personalized guidance</p>
+              <h2 id="advice-heading">
+                {adviceResults.length > 1 ? "Persona comparison" : "Today's advice"}
+              </h2>
+            </div>
+            {reading?.is_stale && (
+              <span className="stale-label">Based on the last available reading</span>
+            )}
+          </div>
+
+          {adviceStatus === "loading" && (
+            <p className="advice-message" role="status">Generating practical guidance…</p>
+          )}
+
+          {adviceStatus === "error" && (
+            <div className="error-message" role="alert">
+              <strong>Advice unavailable</strong>
+              <p>{adviceError}</p>
+            </div>
+          )}
+
+          {adviceResults.length > 0 && (
+            <div className={`advice-grid ${adviceResults.length > 1 ? "comparison" : ""}`}>
+              {adviceResults.map((result) => (
+                <article className="advice-card" key={result.value}>
+                  <div className="persona-heading">
+                    <h3>{result.label}</h3>
+                    <span className="caution-level">{result.advice.caution_level}</span>
+                  </div>
+
+                  <p className="advice-summary">{result.advice.summary}</p>
+
+                  <div className="advice-block">
+                    <h4>Daily routine</h4>
+                    <ol>
+                      {result.advice.daily_routine.map((item, index) => (
+                        <li key={`${item.time_slot}-${index}`}>
+                          <strong>{item.time_slot}</strong>
+                          <p>{item.action}</p>
+                          <small>{item.why}</small>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div className="advice-columns">
+                    <div className="advice-block">
+                      <h4>Indoor actions</h4>
+                      <ul>
+                        {result.advice.indoor_actions.map((item, index) => (
+                          <li key={`${item.action}-${index}`}>
+                            <strong>{item.action}</strong>
+                            <small>{item.why}</small>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="advice-block">
+                      <h4>Sustainable swaps</h4>
+                      <ul>
+                        {result.advice.sustainable_swaps.map((item, index) => (
+                          <li key={`${item.swap}-${index}`}>
+                            <strong>{item.swap}</strong>
+                            <small>{item.why}</small>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }
