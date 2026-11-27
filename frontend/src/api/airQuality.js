@@ -80,6 +80,11 @@ export async function fetchAqi(city) {
     || typeof reading.source !== "string"
     || typeof reading.is_stale !== "boolean"
     || !Array.isArray(reading.history)
+    || (
+      reading.history_parameter !== undefined
+      && reading.history_parameter !== null
+      && !["pm25", "pm10", "both"].includes(reading.history_parameter)
+    )
     || reading.history.some((point) => (
       typeof point?.timestamp !== "string"
       || !Number.isFinite(Date.parse(point.timestamp))

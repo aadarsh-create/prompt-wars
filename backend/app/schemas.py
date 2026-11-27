@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Literal
+
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
@@ -94,6 +96,7 @@ class AQIReading(StrictModel):
     pm25_observed_at: str | None = None
     pm10_observed_at: str | None = None
     history: list[AQIHistoryPoint] = Field(default_factory=list)
+    history_parameter: Literal["pm25", "pm10", "both"] | None = None
 
 
 class DailyRoutineItem(StrictModel):

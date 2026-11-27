@@ -20,6 +20,11 @@ Is stale: {is_stale}
 DECISION RULES
 - If is_stale is yes, state clearly in the summary that the reading is stale and use it only as a cautionary signal.
 - Start with actions that can reduce exposure today; avoid generic lifestyle advice.
+- For severe winter smog, prioritize reducing time outdoors and near traffic, and move discretionary exercise or play indoors when the supplied AQI category warrants it.
+- Do not assume the season, temperature, inversion, wind, or a cleaner time of day; use only the supplied reading and profile.
+- During polluted periods, keep windows closed; suggest brief ventilation only when outdoor air is known to be cleaner.
+- Reduce indoor pollution sources during winter, especially smoke from solid-fuel burning, incense, candles, and cooking; never recommend burning waste.
+- Do not present houseplants as an effective substitute for filtration or source reduction.
 - Match the plan to the persona:
   - senior: reduce outdoor exertion and prioritize seated, short, lower-exposure travel.
   - child_family: include an explicit "go", "limited", or "no-go" decision for outdoor play, based on the supplied category and AQI.

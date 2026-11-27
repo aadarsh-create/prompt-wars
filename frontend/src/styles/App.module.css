@@ -684,9 +684,55 @@
   stroke-width: 2;
 }
 
-.historyEmpty {
-  margin: 18px 0 8px;
+.currentAqiChart {
+  margin-top: 16px;
+}
+
+.historyUnavailable {
+  margin: 0 0 12px;
   color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.currentAqiValue {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.currentAqiValue span {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.historyBandGood {
+  fill: var(--aqi-good-bg);
+}
+
+.historyBandSatisfactory {
+  fill: var(--aqi-satisfactory-bg);
+}
+
+.historyBandModerate {
+  fill: var(--aqi-moderate-bg);
+}
+
+.historyBandPoor {
+  fill: var(--aqi-poor-bg);
+}
+
+.historyBandVeryPoor {
+  fill: var(--aqi-very-poor-bg);
+}
+
+.historyBandSevere {
+  fill: var(--aqi-severe-bg);
+}
+
+.currentAqiMarker {
+  stroke: var(--color-text);
+  stroke-width: 3;
 }
 
 .cardHeading,

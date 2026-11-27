@@ -109,6 +109,28 @@ def test_parses_openaq_location_and_calculates_aqi(openaq_response):
     assert reading["observed_at"] == openaq_response["observed_text"]
     assert reading["source"] == "OpenAQ"
     assert reading["is_stale"] is False
+    assert reading["history_parameter"] == "both"
+    assert reading["history"] == [
+        {"timestamp": openaq_response["history_timestamps"][0], "aqi": 50},
+        {"timestamp": openaq_response["history_timestamps"][1], "aqi": 100},
+    ]
+
+
+def test_uses_available_pollutant_history_when_other_sensor_fails(
+    openaq_response,
+    monkeypatch,
+):
+    original_get_json = aqi_client._get_json
+
+    async def fail_pm10_history(client, path, *, params=None):
+        if path == "/sensors/102/hours":
+            raise aqi_client.OpenAQError("PM10 history unavailable")
+        return await original_get_json(client, path, params=params)
+
+    monkeypatch.setattr(aqi_client, "_get_json", fail_pm10_history)
+    reading = asyncio.run(aqi_client.fetch_city_reading("Delhi"))
+
+    assert reading["history_parameter"] == "pm25"
     assert reading["history"] == [
         {"timestamp": openaq_response["history_timestamps"][0], "aqi": 50},
         {"timestamp": openaq_response["history_timestamps"][1], "aqi": 100},

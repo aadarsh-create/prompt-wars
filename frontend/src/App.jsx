@@ -324,7 +324,7 @@ function App() {
               onRetry={() => loadPlan(profile)}
             />
             {aqiStatus === "success" && reading && (
-              <AqiHistoryChart history={reading.history} />
+              <AqiHistoryChart history={reading.history} reading={reading} />
             )}
           </div>
         </div>

@@ -35,6 +35,7 @@ Changes from v2:
 - Added a decision-first format: risk-reduction actions come before supporting detail.
 - Added explicit persona output behavior, including a child-family go/limited/no-go decision.
 - Added commute-specific rules for walking, cycling, public transport, and cars.
+- Added severe-winter-smog guidance for outdoor exposure, cautious ventilation, and indoor pollution sources.
 - Added concise output counts and guardrails against unsupported thresholds or medical certainty.
 - Added stale-reading wording and city-specific feasibility constraints.
 

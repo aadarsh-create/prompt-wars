@@ -245,6 +245,9 @@ def test_advice_service_loads_prompt_v3(monkeypatch):
     assert "child_family" in prompt
     assert "Is stale: no" in prompt
     assert "explicit \"go\", \"limited\", or \"no-go\" decision" in prompt
+    assert "For severe winter smog" in prompt
+    assert "brief ventilation only when outdoor air is known to be cleaner" in prompt
+    assert "Do not present houseplants as an effective substitute" in prompt
 
 
 def test_advice_endpoint_returns_structured_response(monkeypatch):

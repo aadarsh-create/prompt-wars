@@ -10,7 +10,7 @@ function formatTime(timestamp) {
   }).format(new Date(timestamp));
 }
 
-function AqiHistoryChart({ history }) {
+function AqiHistoryChart({ history, reading }) {
   const now = Date.now();
   const cutoff = now - HISTORY_WINDOW_MS;
   const points = history
@@ -36,13 +36,21 @@ function AqiHistoryChart({ history }) {
     const startsSegment = !previous || point.time - previous.time > 2.5 * 60 * 60 * 1000;
     return `${result}${startsSegment ? "M" : "L"}${point.x.toFixed(1)},${point.y.toFixed(1)} `;
   }, "");
+  const currentAqiX = CHART.left + (reading.aqi / 500) * (CHART.right - CHART.left);
+  const historyLabel = reading.history_parameter === "pm25"
+    ? "Recent trend (PM2.5-based)"
+    : reading.history_parameter === "pm10"
+      ? "Recent trend (PM10-based)"
+      : "Recent trend";
 
   return (
     <section className={styles.historyCard} aria-labelledby="history-title">
       <div className={styles.historyHeading}>
         <div>
-          <p className={styles.sectionEyebrow}>Recent trend</p>
-          <h2 id="history-title">24-hour AQI history</h2>
+          <p className={styles.sectionEyebrow}>
+            {points.length ? historyLabel : "Current reading"}
+          </p>
+          <h2 id="history-title">{points.length ? "24-hour AQI history" : "Current AQI"}</h2>
         </div>
         {points.length > 0 && (
           <span className={styles.historyCount}>{points.length} hourly readings</span>
@@ -85,9 +93,35 @@ function AqiHistoryChart({ history }) {
           <text x={CHART.right} y="151" textAnchor="end">Now</text>
         </svg>
       ) : (
-        <p className={styles.historyEmpty}>
-          Hourly history isn’t available for this station yet.
-        </p>
+        <div className={styles.currentAqiChart}>
+          <p className={styles.historyUnavailable}>
+            Hourly history isn’t available for this station; this chart shows the current AQI.
+          </p>
+          <p className={styles.currentAqiValue}>AQI {reading.aqi} <span>out of 500</span></p>
+          <svg
+            className={styles.historyChart}
+            viewBox="0 0 480 92"
+            role="img"
+            aria-label={`Current AQI is ${reading.aqi} on a scale from 0 to 500`}
+          >
+            <rect x="36" y="34" width="43.2" height="22" className={styles.historyBandGood} />
+            <rect x="79.2" y="34" width="43.2" height="22" className={styles.historyBandSatisfactory} />
+            <rect x="122.4" y="34" width="86.4" height="22" className={styles.historyBandModerate} />
+            <rect x="208.8" y="34" width="86.4" height="22" className={styles.historyBandPoor} />
+            <rect x="295.2" y="34" width="86.4" height="22" className={styles.historyBandVeryPoor} />
+            <rect x="381.6" y="34" width="86.4" height="22" className={styles.historyBandSevere} />
+            <line
+              x1={currentAqiX}
+              x2={currentAqiX}
+              y1="27"
+              y2="64"
+              className={styles.currentAqiMarker}
+            />
+            <text x="36" y="82">0</text>
+            <text x="252" y="82" textAnchor="middle">250</text>
+            <text x="468" y="82" textAnchor="end">500</text>
+          </svg>
+        </div>
       )}
     </section>
   );

@@ -337,6 +337,7 @@ async def fetch_city_reading(city: str) -> dict[str, Any]:
                 aqi = max(_sub_index("pm25", pm25), _sub_index("pm10", pm10))
                 observed_at = min(pm25_timestamp, pm10_timestamp)
                 history: list[dict[str, Any]] = []
+                history_parameter: str | None = None
                 try:
                     hourly_by_parameter: dict[str, dict[datetime, float]] = {}
                     history_sensors = [
@@ -356,30 +357,64 @@ async def fetch_city_reading(city: str) -> dict[str, Any]:
                                 },
                             )
                             for sensor_id, _ in history_sensors
-                        )
+                        ),
+                        return_exceptions=True,
                     )
                     for (_, parameter), hourly_payload in zip(
                         history_sensors,
                         hourly_payloads,
                     ):
-                        hourly_by_parameter[parameter] = _hourly_pm_readings(
-                            hourly_payload,
-                            now,
-                        )
+                        if isinstance(hourly_payload, Exception):
+                            logger.warning(
+                                "Unable to retrieve %s history for %s: %s",
+                                parameter,
+                                normalized_city,
+                                hourly_payload,
+                            )
+                            continue
+                        try:
+                            hourly_by_parameter[parameter] = _hourly_pm_readings(
+                                hourly_payload,
+                                now,
+                            )
+                        except OpenAQError as error:
+                            logger.warning(
+                                "Unable to parse %s history for %s: %s",
+                                parameter,
+                                normalized_city,
+                                error,
+                            )
+                    pm25_history = hourly_by_parameter.get("pm25", {})
+                    pm10_history = hourly_by_parameter.get("pm10", {})
                     common_timestamps = sorted(
-                        set(hourly_by_parameter.get("pm25", {}))
-                        & set(hourly_by_parameter.get("pm10", {}))
+                        set(pm25_history)
+                        & set(pm10_history)
                     )
-                    history = [
-                        {
-                            "timestamp": timestamp.isoformat(),
-                            "aqi": max(
-                                _sub_index("pm25", hourly_by_parameter["pm25"][timestamp]),
-                                _sub_index("pm10", hourly_by_parameter["pm10"][timestamp]),
-                            ),
-                        }
-                        for timestamp in common_timestamps
-                    ]
+                    most_available_count = max(len(pm25_history), len(pm10_history))
+                    if common_timestamps and len(common_timestamps) == most_available_count:
+                        history_parameter = "both"
+                        history = [
+                            {
+                                "timestamp": timestamp.isoformat(),
+                                "aqi": max(
+                                    _sub_index("pm25", pm25_history[timestamp]),
+                                    _sub_index("pm10", pm10_history[timestamp]),
+                                ),
+                            }
+                            for timestamp in common_timestamps
+                        ]
+                    elif most_available_count:
+                        history_parameter = (
+                            "pm25" if len(pm25_history) >= len(pm10_history) else "pm10"
+                        )
+                        selected_history = hourly_by_parameter[history_parameter]
+                        history = [
+                            {
+                                "timestamp": timestamp.isoformat(),
+                                "aqi": _sub_index(history_parameter, value),
+                            }
+                            for timestamp, value in sorted(selected_history.items())
+                        ]
                 except OpenAQError as error:
                     logger.warning(
                         "Unable to retrieve 24-hour AQI history for %s: %s",
@@ -399,6 +434,7 @@ async def fetch_city_reading(city: str) -> dict[str, Any]:
                     "station": location.get("name") or f"OpenAQ location {location['id']}",
                     "is_stale": False,
                     "history": history,
+                    "history_parameter": history_parameter,
                 }
     except OpenAQError:
         raise
