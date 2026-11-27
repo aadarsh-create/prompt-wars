@@ -54,3 +54,16 @@ Run advice requests against these representative combinations:
 | Stale data | 180 / Moderate, stale | student | cycle | no | Summary identifies stale data and gives caution only |
 
 The service currently loads v3 at `PROMPT_PATH`. v1 and v2 remain available for comparison and prompt-evolution review.
+
+## Evaluation results (real runs only)
+
+The evaluation harness updates this table from saved Gemini run artifacts.
+It uses the latest completed real run for each version; versions without a
+saved run are omitted. Percentages are truncated, not rounded up, and include
+the exact passed/total count. The deterministic checks are heuristic and do
+not replace expert review.
+
+<!-- EVAL RESULTS START -->
+No real Gemini evaluation runs are recorded yet. This comparison will contain
+only measured results after prompt versions are evaluated.
+<!-- EVAL RESULTS END -->

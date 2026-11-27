@@ -1,0 +1,67 @@
+{
+  "input_data_notice": "ALL AQI AND POLLUTANT VALUES IN THIS FILE ARE TEST INPUTS ONLY. Never import these fixtures into the runtime app.",
+  "matrix": {
+    "cities": [
+      "Delhi",
+      "Mumbai",
+      "Kolkata",
+      "Chennai",
+      "Bengaluru",
+      "Hyderabad"
+    ],
+    "personas": [
+      "child_family",
+      "senior",
+      "working_professional",
+      "student"
+    ],
+    "commute_modes": [
+      "walk",
+      "cycle",
+      "public_transport",
+      "car"
+    ],
+    "aqi_buckets": [
+      {"name": "Good", "aqi": 25, "pm25": 15, "pm10": 25},
+      {"name": "Satisfactory", "aqi": 75, "pm25": 45, "pm10": 75},
+      {"name": "Moderate", "aqi": 150, "pm25": 75, "pm10": 175},
+      {"name": "Poor", "aqi": 250, "pm25": 105, "pm10": 300},
+      {"name": "Very Poor", "aqi": 350, "pm25": 180, "pm10": 390},
+      {"name": "Severe", "aqi": 450, "pm25": 300, "pm10": 470}
+    ]
+  },
+  "edge_cases": [
+    {
+      "id": "edge-no-purifier",
+      "city": "Hyderabad",
+      "persona": "student",
+      "commute_mode": "none",
+      "has_purifier": false,
+      "aqi_bucket": "Moderate"
+    },
+    {
+      "id": "edge-walking-commute",
+      "city": "Bengaluru",
+      "persona": "working_professional",
+      "commute_mode": "walk",
+      "has_purifier": true,
+      "aqi_bucket": "Very Poor"
+    },
+    {
+      "id": "edge-senior-severe",
+      "city": "Kolkata",
+      "persona": "senior",
+      "commute_mode": "walk",
+      "has_purifier": true,
+      "aqi_bucket": "Severe"
+    },
+    {
+      "id": "edge-child-poor",
+      "city": "Delhi",
+      "persona": "child_family",
+      "commute_mode": "car",
+      "has_purifier": true,
+      "aqi_bucket": "Poor"
+    }
+  ]
+}

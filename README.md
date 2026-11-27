@@ -64,6 +64,24 @@ include the station, source, pollutant observation times, and a stale flag.
 If OpenAQ fails, the last successful reading is returned with `is_stale: true`;
 this in-memory cache is cleared when the backend restarts.
 
+## Advice prompt evaluation
+
+The offline evaluation harness is in `backend/evals/`. It supplies
+parameterised AQI fixture values marked **TEST INPUT ONLY** to the existing
+advice service; those fixtures are never imported by the runtime app. The app
+itself uses live AQI-provider data, or its last previously fetched real reading
+marked stale when the provider is unavailable.
+
+Run one prompt version from the `backend` directory with
+`python -m evals.run_eval --prompt v3`. Each run is serial, waits at least 12
+seconds between top-level evaluation calls (the service's existing retry is
+immediate), and is capped at 148 cases. A complete run makes
+148 advice-service calls and can make up to 296 Gemini HTTP attempts if every
+service call uses its existing retry. Add `--judge` only when desired; it makes
+up to 148 additional calls and Gemini grading Gemini may introduce model bias.
+Results are written to `backend/evals/results/`; pytest tests the deterministic
+checks without making Gemini calls.
+
 ## Planned Features
 - Profile form: city, persona, commute mode, has purifier (y/n)
 - Live AQI card (PM2.5, PM10, AQI, last updated time)
