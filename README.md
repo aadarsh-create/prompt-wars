@@ -123,27 +123,3 @@ cd frontend && npm install && npm run dev
 Open http://localhost:5173. API docs are at http://localhost:8000/docs.
 `.env` is gitignored, so never commit keys.
 
-## 🚀 Deploy frontend on GitHub Pages and API on Render
-
-The Render Blueprint (`render.yaml`) creates only the FastAPI backend. A GitHub
-Actions workflow (`.github/workflows/deploy-frontend.yml`) builds and publishes
-the Vite frontend to GitHub Pages.
-
-1. Push this repository, including `render.yaml` and the workflow, to GitHub.
-2. In Render, choose **New → Blueprint**, connect this repository, and apply the
-   Blueprint. In the `prompt-wars-api` service's environment, set:
-   - `OPENAQ_API_KEY`
-   - `GEMINI_KEY`
-   - `CORS_ORIGINS` to `https://aadarsh-create.github.io`
-3. Wait for the backend to deploy. Its API docs will be at
-   `https://<your-api-service>.onrender.com/docs`.
-4. In GitHub, open **Settings → Secrets and variables → Actions → Variables**
-   and create a repository variable named `VITE_API_URL` with the backend's
-   base URL, for example `https://prompt-wars-api.onrender.com` (no `/api` path).
-5. In GitHub, open **Settings → Pages** and set the source to **GitHub Actions**.
-   Push to the `main` branch to run the frontend deployment workflow. The site
-   will be published at `https://aadarsh-create.github.io/prompt-wars/`.
-
-The `CORS_ORIGINS` value must match the GitHub Pages origin exactly (the URL
-without the repository path or a trailing slash). `GEMINI_MODEL` is optional
-and defaults to `gemini-2.0-flash`.
