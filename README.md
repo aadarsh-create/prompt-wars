@@ -58,7 +58,6 @@ Interactive docs at `/docs`. Main endpoints:
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/cities` | Supported city allowlist |
 | `GET /api/aqi?city=Delhi` | Live AQI, history, temperature, stale flag |
 | `POST /api/advice` | Personalised plan from a profile |
 | `GET /api/health` | Health check |

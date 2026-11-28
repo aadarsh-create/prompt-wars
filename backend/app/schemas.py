@@ -4,15 +4,6 @@ from typing import Literal
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
-SUPPORTED_CITIES = (
-    "Delhi",
-    "Mumbai",
-    "Kolkata",
-    "Chennai",
-    "Bengaluru",
-    "Hyderabad",
-)
-
 class City(str, Enum):
     DELHI = "Delhi"
     MUMBAI = "Mumbai"

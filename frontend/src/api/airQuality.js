@@ -56,18 +56,6 @@ async function requestJson(path, options) {
   return payload;
 }
 
-export async function fetchCities() {
-  const payload = await requestJson("/api/cities");
-  if (
-    !Array.isArray(payload?.cities)
-    || payload.cities.length === 0
-    || payload.cities.some((city) => typeof city !== "string" || city.length === 0)
-  ) {
-    throw new ApiError("request");
-  }
-  return payload.cities;
-}
-
 export async function fetchAqi(city) {
   const reading = await requestJson(`/api/aqi?city=${encodeURIComponent(city)}`);
   if (

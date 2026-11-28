@@ -1,4 +1,4 @@
-let healthStatus = "checking";
+let serverStatus = "checking";
 let pendingRequests = 0;
 let apiFailure = false;
 const listeners = new Set();
@@ -6,7 +6,7 @@ const listeners = new Set();
 function currentStatus() {
   if (pendingRequests > 0) return "waiting";
   if (apiFailure) return "offline";
-  return healthStatus;
+  return serverStatus;
 }
 
 function notifyListeners() {
@@ -24,7 +24,7 @@ export function subscribeServerStatus(listener) {
   return () => listeners.delete(listener);
 }
 
-export function beginServerRequest({ healthCheck = false } = {}) {
+export function beginServerRequest() {
   pendingRequests += 1;
   notifyListeners();
   let completed = false;
@@ -34,16 +34,12 @@ export function beginServerRequest({ healthCheck = false } = {}) {
     completed = true;
     pendingRequests -= 1;
 
-    if (healthCheck) {
-      if (result === "success" || result === "failure") {
-        healthStatus = result === "success" ? "online" : "offline";
-      }
-    } else if (result === "success") {
+    if (result === "success") {
       apiFailure = false;
-      healthStatus = "online";
+      serverStatus = "online";
     } else if (result === "failure") {
       apiFailure = true;
-      healthStatus = "offline";
+      serverStatus = "offline";
     }
 
     notifyListeners();

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, Sparkles, Wind } from "lucide-react";
-import { ApiError, fetchAdvice, fetchAqi, fetchCities } from "./api/airQuality.js";
+import { ApiError, fetchAdvice, fetchAqi } from "./api/airQuality.js";
 import AdviceSection from "./components/AdviceSection.jsx";
 import AqiCard from "./components/AqiCard.jsx";
 import AqiHistoryChart from "./components/AqiHistoryChart.jsx";
@@ -9,6 +9,8 @@ import PersonaCompare from "./components/PersonaCompare.jsx";
 import ProfileForm, { PERSONAS } from "./components/ProfileForm.jsx";
 import ServerStatus from "./components/ServerStatus.jsx";
 import styles from "./styles/App.module.css";
+
+const CITIES = ["Delhi", "Mumbai", "Kolkata", "Chennai", "Bengaluru", "Hyderabad"];
 
 function errorMessage(error) {
   if (error instanceof ApiError) {
@@ -24,10 +26,8 @@ function App() {
   const [systemTheme, setSystemTheme] = useState(() => (
     window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
   ));
-  const [cities, setCities] = useState([]);
-  const [citiesStatus, setCitiesStatus] = useState("loading");
   const [profile, setProfile] = useState({
-    city: "",
+    city: CITIES[0],
     persona: "child_family",
     commuteMode: "none",
     hasPurifier: false,
@@ -43,7 +43,6 @@ function App() {
   const [comparisonStatus, setComparisonStatus] = useState("idle");
   const [comparisonError, setComparisonError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const initialCitiesLoadStarted = useRef(false);
   const initialPlanRequested = useRef(false);
 
   const theme = themeOverride || systemTheme;
@@ -63,28 +62,6 @@ function App() {
       delete document.documentElement.dataset.theme;
     }
   }, [themeOverride]);
-
-  async function loadCities() {
-    setCitiesStatus("loading");
-    try {
-      const availableCities = await fetchCities();
-      setCities(availableCities);
-      setCitiesStatus("success");
-      setProfile((current) => ({
-        ...current,
-        city: current.city || availableCities[0],
-      }));
-    } catch (error) {
-      setCitiesStatus("error");
-      setCities([]);
-    }
-  }
-
-  useEffect(() => {
-    if (initialCitiesLoadStarted.current) return;
-    initialCitiesLoadStarted.current = true;
-    loadCities();
-  }, []);
 
   function clearResults() {
     setReading(null);
@@ -187,10 +164,10 @@ function App() {
   }
 
   useEffect(() => {
-    if (citiesStatus !== "success" || !profile.city || initialPlanRequested.current) return;
+    if (!profile.city || initialPlanRequested.current) return;
     initialPlanRequested.current = true;
     loadPlan(profile);
-  }, [citiesStatus, profile.city]);
+  }, [profile.city]);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -302,14 +279,12 @@ function App() {
 
         <div className={styles.dashboard}>
           <ProfileForm
-            cities={cities}
-            citiesStatus={citiesStatus}
+            cities={CITIES}
             profile={profile}
             errors={fieldErrors}
             submitting={submitting}
             onChange={handleProfileChange}
             onSubmit={handleSubmit}
-            onRetryCities={loadCities}
           />
 
           <div className={styles.aqiColumn} aria-live="polite" aria-busy={aqiStatus === "loading"}>

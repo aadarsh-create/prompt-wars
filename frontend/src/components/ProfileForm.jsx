@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, GraduationCap, Heart, PersonStanding, RefreshCw } from "lucide-react";
+import { BriefcaseBusiness, GraduationCap, Heart, PersonStanding } from "lucide-react";
 import styles from "../styles/App.module.css";
 
 export const PERSONAS = [
@@ -22,13 +22,11 @@ function FieldError({ id, children }) {
 
 function ProfileForm({
   cities,
-  citiesStatus,
   profile,
   errors,
   submitting,
   onChange,
   onSubmit,
-  onRetryCities,
 }) {
   return (
     <form id="daily-context" className={styles.profileCard} onSubmit={onSubmit} noValidate>
@@ -45,33 +43,18 @@ function ProfileForm({
           name="city"
           value={profile.city}
           onChange={onChange}
-          disabled={citiesStatus !== "success" || submitting}
+          disabled={submitting}
           aria-invalid={Boolean(errors.city)}
-          aria-describedby={
-            errors.city
-              ? "city-error"
-              : citiesStatus === "loading" || citiesStatus === "success"
-                ? "city-help"
-                : undefined
-          }
+          aria-describedby={errors.city ? "city-error" : "city-help"}
           required
         >
           <option value="" disabled>
-            {citiesStatus === "loading" ? "Loading available cities…" : "Choose your city"}
+            Choose your city
           </option>
           {cities.map((city) => <option key={city} value={city}>{city}</option>)}
         </select>
-        {citiesStatus === "loading" && <span className={styles.helperText} id="city-help">Loading cities from the service.</span>}
-        {citiesStatus === "success" && !errors.city && <span className={styles.helperText} id="city-help">Choose a supported city.</span>}
+        {!errors.city && <span className={styles.helperText} id="city-help">Choose a supported city.</span>}
         <FieldError id="city-error">{errors.city}</FieldError>
-        {citiesStatus === "error" && (
-          <div className={styles.inlineError} role="alert">
-            <span>We couldn’t load the available cities.</span>
-            <button type="button" className={styles.textButton} onClick={onRetryCities}>
-              <RefreshCw size={15} aria-hidden="true" /> Try again
-            </button>
-          </div>
-        )}
       </div>
 
       <fieldset className={styles.personaFieldset} disabled={submitting}>
@@ -143,7 +126,7 @@ function ProfileForm({
       </fieldset>
 
       {errors.form && <p className={styles.fieldError} role="alert">{errors.form}</p>}
-      <button className={styles.primaryButton} type="submit" disabled={citiesStatus !== "success" || submitting}>
+      <button className={styles.primaryButton} type="submit" disabled={submitting}>
         {submitting ? "Preparing your plan…" : "Get my plan"}
       </button>
     </form>
