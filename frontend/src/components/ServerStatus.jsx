@@ -69,9 +69,17 @@ function ServerStatus() {
         : "Checking server";
 
   return (
-    <div className={`${styles.serverStatus} ${styles[status]}`} role="status" aria-label={label}>
+    <div
+      className={`${styles.serverStatus} ${styles[status]}`}
+      role="status"
+      aria-label={label}
+      tabIndex={0}
+    >
       <span>Server</span>
       <span className={styles.statusDot} aria-hidden="true" />
+      <span className={styles.tooltip} role="tooltip">
+        First start may take 20–40 seconds due to free-tier cold start
+      </span>
     </div>
   );
 }

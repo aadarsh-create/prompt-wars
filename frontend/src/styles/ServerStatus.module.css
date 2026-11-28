@@ -18,6 +18,34 @@
   line-height: 1;
 }
 
+.tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: 220px;
+  border-radius: 8px;
+  background: #1E293B;
+  padding: 8px 10px;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 18%);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  visibility: hidden;
+  transition: none;
+}
+
+.serverStatus:hover .tooltip,
+.serverStatus:focus-visible .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
 .statusDot {
   position: relative;
   width: 9px;
