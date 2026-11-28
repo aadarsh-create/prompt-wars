@@ -40,10 +40,14 @@ async def get_aqi(
             temperature_result,
         )
         temperature_c = None
+        temperature_source = None
+        temperature_observed_at = None
     elif isinstance(temperature_result, BaseException):
         raise temperature_result
     else:
-        temperature_c = temperature_result
+        temperature_c = temperature_result.temperature_c
+        temperature_source = temperature_result.source
+        temperature_observed_at = temperature_result.observed_at
 
     if isinstance(reading_result, OpenAQError):
         error = reading_result
@@ -52,6 +56,8 @@ async def get_aqi(
         if cached_reading is not None:
             cached_reading["is_stale"] = True
             cached_reading["temperature_c"] = temperature_c
+            cached_reading["temperature_source"] = temperature_source
+            cached_reading["temperature_observed_at"] = temperature_observed_at
             return cached_reading
         raise HTTPException(
             status_code=503,
@@ -63,4 +69,9 @@ async def get_aqi(
 
     reading = reading_result
     cache_reading(normalized_city, reading)
-    return {**reading, "temperature_c": temperature_c}
+    return {
+        **reading,
+        "temperature_c": temperature_c,
+        "temperature_source": temperature_source,
+        "temperature_observed_at": temperature_observed_at,
+    }

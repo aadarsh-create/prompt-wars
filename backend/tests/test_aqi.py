@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services import aqi_cache
 from app.services import aqi_client
-from app.services.weather_client import WeatherError
+from app.services.weather_client import TemperatureReading, WeatherError
 
 
 @pytest.fixture(autouse=True)
@@ -184,7 +184,11 @@ def test_returns_stale_cached_reading_when_provider_fails(monkeypatch):
         raise aqi_client.OpenAQError("provider unavailable")
 
     async def temperature_available(city):
-        return 21.5
+        return TemperatureReading(
+            temperature_c=21.5,
+            source="Open-Meteo",
+            observed_at="2026-11-28T12:00:00+00:00",
+        )
 
     monkeypatch.setattr("app.routers.aqi.fetch_city_reading", provider_failure)
     monkeypatch.setattr("app.routers.aqi.fetch_city_temperature", temperature_available)
@@ -196,6 +200,7 @@ def test_returns_stale_cached_reading_when_provider_fails(monkeypatch):
     assert response.json()["is_stale"] is True
     assert response.json()["aqi"] == 143
     assert response.json()["temperature_c"] == 21.5
+    assert response.json()["temperature_source"] == "Open-Meteo"
 
 
 def test_returns_503_when_provider_and_cache_are_unavailable(monkeypatch):
@@ -217,7 +222,11 @@ def test_returns_503_when_provider_and_cache_are_unavailable(monkeypatch):
 
 def test_aqi_response_includes_temperature_when_available(openaq_response, monkeypatch):
     async def temperature_available(city):
-        return 24.5
+        return TemperatureReading(
+            temperature_c=24.5,
+            source="MET Norway",
+            observed_at="2026-11-28T12:00:00+00:00",
+        )
 
     monkeypatch.setattr("app.routers.aqi.fetch_city_temperature", temperature_available)
 
@@ -226,6 +235,8 @@ def test_aqi_response_includes_temperature_when_available(openaq_response, monke
 
     assert response.status_code == 200
     assert response.json()["temperature_c"] == 24.5
+    assert response.json()["temperature_source"] == "MET Norway"
+    assert response.json()["temperature_observed_at"] == "2026-11-28T12:00:00+00:00"
 
 
 def test_rejects_unsupported_city():

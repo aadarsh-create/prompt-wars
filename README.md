@@ -45,9 +45,9 @@ into specific, explained actions for a specific person.
 flowchart LR
   U[React UI] --> A[FastAPI]
   A --> O[OpenAQ v3<br/>live AQI + history]
-  A --> W[Open-Meteo<br/>temperature]
+  A --> W[Open-Meteo<br/>MET Norway fallback]
   A --> G[Gemini<br/>structured advice]
-  A --> C[(In-memory cache<br/>last real reading)]
+  A --> C[(In-memory caches<br/>AQI + temperature)]
 ```
 
 🔒 Keys stay on the backend. The browser never talks to OpenAQ or Gemini.
@@ -58,11 +58,14 @@ Interactive docs at `/docs`. Main endpoints:
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/aqi?city=Delhi` | Live AQI, history, temperature, stale flag |
+| `GET /api/aqi?city=Delhi` | Live AQI, history, temperature, source and valid time |
 | `POST /api/advice` | Personalised plan from a profile |
 | `GET /api/health` | Health check |
 
 Rate limits: 30/min (AQI) and 10/min (advice) per client.
+Temperature uses Open-Meteo with MET Norway as a fallback and caches each
+city's result for up to three hours to limit requests from shared hosting IPs.
+Weather source and forecast valid time are included in the AQI response.
 
 ## 🧠 Prompt engineering
 

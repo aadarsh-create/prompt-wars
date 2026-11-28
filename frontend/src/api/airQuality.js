@@ -85,6 +85,19 @@ export async function fetchAqi(city) {
         || reading.temperature_c > 70
       )
     )
+    || (
+      reading.temperature_source !== undefined
+      && reading.temperature_source !== null
+      && !["Open-Meteo", "MET Norway"].includes(reading.temperature_source)
+    )
+    || (
+      reading.temperature_observed_at !== undefined
+      && reading.temperature_observed_at !== null
+      && (
+        typeof reading.temperature_observed_at !== "string"
+        || !Number.isFinite(Date.parse(reading.temperature_observed_at))
+      )
+    )
     || !Array.isArray(reading.history)
     || (
       reading.history_parameter !== undefined

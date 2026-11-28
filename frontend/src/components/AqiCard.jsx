@@ -77,7 +77,11 @@ function AqiCard({ city, reading, status, error, onRetry }) {
         <>
           {reading.is_stale && <StaleBanner observedAt={reading.observed_at} />}
           <ReadingDetails reading={reading} />
-          <TemperatureChart temperatureC={reading.temperature_c} />
+          <TemperatureChart
+            temperatureC={reading.temperature_c}
+            temperatureSource={reading.temperature_source}
+            temperatureObservedAt={reading.temperature_observed_at}
+          />
         </>
       )}
     </section>

@@ -768,6 +768,16 @@
   font-size: 0.875rem;
 }
 
+.temperatureAttribution {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.temperatureAttribution a {
+  color: inherit;
+}
+
 .temperatureScale {
   fill: url(#temperature-gradient);
 }
