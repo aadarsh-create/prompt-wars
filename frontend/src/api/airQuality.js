@@ -1,5 +1,7 @@
 import { beginServerRequest } from "./serverStatus.js";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
 const FIELD_MESSAGES = {
   city: "Choose a supported city.",
   persona: "Choose who this plan is for.",
@@ -30,7 +32,7 @@ async function requestJson(path, options) {
   let response;
   const serverRequest = beginServerRequest();
   try {
-    response = await fetch(path, options);
+    response = await fetch(`${API_BASE_URL}${path}`, options);
   } catch {
     serverRequest.fail();
     throw new ApiError("network");
